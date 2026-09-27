@@ -57,14 +57,14 @@ Exemplo do corpo para criar ou atualizar:
 {
   "origem": "Rio de Janeiro",
   "destino": "São Paulo",
-  "data_inicio": "2026-12-01",
-  "data_fim": "2026-12-07",
+  "data_inicio": "2026-10-01",
+  "data_fim": "2026-10-03",
   "orcamento": 2500,
   "meio_transporte": "carro"
 }
 ```
 
-Detalhar a viagem (`GET /viagens/{id}`) retorna também `distancia_km`, `duracao_estimada_horas` e a previsão diária em `previsao_tempo`. O cálculo de distância e duração é feito pela API secundária via REST. A previsão disponível é limitada ao horizonte de até 16 dias da Open-Meteo.
+Detalhar a viagem (`GET /viagens/{id}`) retorna também `distancia_km`, `duracao_estimada_horas` e a previsão diária em `previsao_tempo`. O cálculo de distância e duração é feito pela API secundária via REST. A previsão disponível é limitada ao horizonte de até 16 dias da Open-Meteo; escolha datas dentro desse horizonte para receber os dados previstos.
 
 Exemplo simplificado da resposta de detalhe:
 
@@ -73,15 +73,25 @@ Exemplo simplificado da resposta de detalhe:
   "id": 1,
   "origem": "Rio de Janeiro",
   "destino": "São Paulo",
-  "data_inicio": "2026-10-10",
-  "data_fim": "2026-10-15",
+  "data_inicio": "2026-10-01",
+  "data_fim": "2026-10-03",
   "orcamento": 3000,
   "meio_transporte": "carro",
   "distancia_km": 357.12,
   "duracao_estimada_horas": 3.57,
-  "previsao_tempo": []
+  "previsao_tempo": [
+    {
+      "data": "2026-10-01",
+      "temperatura_maxima_c": 27,
+      "temperatura_minima_c": 18,
+      "precipitacao_mm": 2.4,
+      "chance_chuva_percentual": 30
+    }
+  ]
 }
 ```
+
+Os valores meteorológicos acima são ilustrativos; a lista real terá um item para cada dia disponível no período solicitado.
 
 ## Arquitetura
 
