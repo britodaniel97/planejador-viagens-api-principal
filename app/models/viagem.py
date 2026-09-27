@@ -1,16 +1,25 @@
 from datetime import date
+from typing import Literal
 
 from pydantic import BaseModel
 
 
 class ViagemEntrada(BaseModel):
+    origem: str
     destino: str
     data_inicio: date
     data_fim: date
+    orcamento: float
+    meio_transporte: Literal["carro", "onibus", "aviao"]
 
 
 class ViagemResposta(ViagemEntrada):
     id: int
+
+
+class Coordenadas(BaseModel):
+    latitude: float
+    longitude: float
 
 
 class DiaPrevisao(BaseModel):
@@ -24,3 +33,9 @@ class DiaPrevisao(BaseModel):
 class PrevisaoResposta(BaseModel):
     destino: str
     previsao: list[DiaPrevisao]
+
+
+class ViagemDetalheResposta(ViagemResposta):
+    distancia_km: float
+    duracao_estimada_horas: float
+    previsao_tempo: list[DiaPrevisao]

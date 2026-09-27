@@ -13,31 +13,73 @@ uvicorn main:app --reload --port 8000
 
 A documentação interativa fica em `http://localhost:8000/docs`.
 
+## Testar as APIs com Docker
+
+Crie uma rede Docker compartilhada e inicie primeiro a API secundária:
+
+```bash
+docker network create planejador-rede
+docker run -d --name planejador-api-secundaria --network planejador-rede -p 8002:8001 planejador-viagens-secundaria
+```
+
+Depois, inicie a API principal na mesma rede:
+
+```bash
+docker run -d --name planejador-api-principal --network planejador-rede \
+  -e API_SECUNDARIA_URL=http://planejador-api-secundaria:8001 \
+  -p 8000:8000 \
+  -v "$(pwd)/data:/app/data" \
+  planejador-viagens-principal
+```
+
+O Swagger da principal fica em `http://localhost:8000/docs`. A porta 8002 expõe a secundária para facilitar testes; a principal comunica-se com ela pela rede Docker, usando a porta interna 8001.
+
 ## Executar com Docker
 
 ```bash
 docker build -t planejador-viagens-principal .
-docker run --rm -p 8000:8000 -v "$(pwd)/data:/app/data" planejador-viagens-principal
 ```
 
 O volume mantém o arquivo SQLite `viagens.db` no diretório `data` do computador.
 
 ## Rotas
 
-- `POST /viagens` — cria uma viagem com `destino`, `data_inicio` e `data_fim`.
-- `GET /viagens` — lista as viagens.
-- `GET /viagens/{id}` — consulta uma viagem.
+- `POST /viagens` — cria uma viagem com origem, destino, datas, orçamento e meio de transporte.
+- `GET /viagens` — lista os dados persistidos, sem consultar os outros serviços.
+- `GET /viagens/{id}` — busca os dados no SQLite, obtém coordenadas e previsão no Open-Meteo, chama a API secundária para distância e duração e retorna uma resposta consolidada.
 - `PUT /viagens/{id}` — substitui os dados da viagem.
 - `DELETE /viagens/{id}` — remove uma viagem.
-- `GET /viagens/{id}/previsao` — procura o destino no Open-Meteo e retorna a previsão formatada, incluindo temperaturas, precipitação em milímetros e probabilidade de chuva.
+- `GET /viagens/{id}/previsao` — retorna separadamente a previsão diária formatada entre as datas da viagem.
 
 Exemplo do corpo para criar ou atualizar:
 
 ```json
 {
-  "destino": "Rio de Janeiro",
+  "origem": "Rio de Janeiro",
+  "destino": "São Paulo",
   "data_inicio": "2026-12-01",
-  "data_fim": "2026-12-07"
+  "data_fim": "2026-12-07",
+  "orcamento": 2500,
+  "meio_transporte": "carro"
+}
+```
+
+Detalhar a viagem (`GET /viagens/{id}`) retorna também `distancia_km`, `duracao_estimada_horas` e a previsão diária em `previsao_tempo`. O cálculo de distância e duração é feito pela API secundária via REST. A previsão disponível é limitada ao horizonte de até 16 dias da Open-Meteo.
+
+Exemplo simplificado da resposta de detalhe:
+
+```json
+{
+  "id": 1,
+  "origem": "Rio de Janeiro",
+  "destino": "São Paulo",
+  "data_inicio": "2026-10-10",
+  "data_fim": "2026-10-15",
+  "orcamento": 3000,
+  "meio_transporte": "carro",
+  "distancia_km": 357.12,
+  "duracao_estimada_horas": 3.57,
+  "previsao_tempo": []
 }
 ```
 

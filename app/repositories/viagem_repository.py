@@ -28,12 +28,29 @@ class ViagemRepository:
                 """
                 CREATE TABLE IF NOT EXISTS viagens (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    origem TEXT NOT NULL,
                     destino TEXT NOT NULL,
                     data_inicio TEXT NOT NULL,
-                    data_fim TEXT NOT NULL
+                    data_fim TEXT NOT NULL,
+                    orcamento REAL NOT NULL,
+                    meio_transporte TEXT NOT NULL
                 )
                 """
             )
+            colunas_existentes = {
+                coluna["name"]
+                for coluna in conexao.execute("PRAGMA table_info(viagens)")
+            }
+            migracoes = {
+                "origem": "TEXT NOT NULL DEFAULT ''",
+                "orcamento": "REAL NOT NULL DEFAULT 0",
+                "meio_transporte": "TEXT NOT NULL DEFAULT 'carro'",
+            }
+            for coluna, definicao in migracoes.items():
+                if coluna not in colunas_existentes:
+                    conexao.execute(
+                        f"ALTER TABLE viagens ADD COLUMN {coluna} {definicao}"
+                    )
 
     @staticmethod
     def _para_resposta(registro: sqlite3.Row) -> ViagemResposta:
@@ -44,13 +61,18 @@ class ViagemRepository:
         with self._conectar() as conexao:
             cursor = conexao.execute(
                 """
-                INSERT INTO viagens (destino, data_inicio, data_fim)
-                VALUES (?, ?, ?)
+                INSERT INTO viagens (
+                    origem, destino, data_inicio, data_fim, orcamento, meio_transporte
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
                 (
+                    dados["origem"],
                     dados["destino"],
                     dados["data_inicio"].isoformat(),
                     dados["data_fim"].isoformat(),
+                    dados["orcamento"],
+                    dados["meio_transporte"],
                 ),
             )
             registro = conexao.execute(
@@ -80,13 +102,17 @@ class ViagemRepository:
             cursor = conexao.execute(
                 """
                 UPDATE viagens
-                SET destino = ?, data_inicio = ?, data_fim = ?
+                SET origem = ?, destino = ?, data_inicio = ?, data_fim = ?,
+                    orcamento = ?, meio_transporte = ?
                 WHERE id = ?
                 """,
                 (
+                    dados["origem"],
                     dados["destino"],
                     dados["data_inicio"].isoformat(),
                     dados["data_fim"].isoformat(),
+                    dados["orcamento"],
+                    dados["meio_transporte"],
                     viagem_id,
                 ),
             )

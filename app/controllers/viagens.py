@@ -2,13 +2,23 @@ import os
 
 from fastapi import APIRouter, HTTPException, Response, status
 
-from app.models.viagem import PrevisaoResposta, ViagemEntrada, ViagemResposta
+from app.models.viagem import (
+    PrevisaoResposta,
+    ViagemDetalheResposta,
+    ViagemEntrada,
+    ViagemResposta,
+)
 from app.repositories.viagem_repository import ViagemRepository
+from app.services.api_secundaria_service import (
+    ApiSecundariaService,
+    ErroServicoSecundario,
+)
 from app.services.open_meteo_service import (
     DestinoNaoEncontrado,
     ErroOpenMeteo,
     OpenMeteoService,
 )
+from app.services.orquestrador_viagem_service import OrquestradorViagemService
 from app.services.viagem_service import ViagemService
 
 router = APIRouter(prefix="/viagens", tags=["Viagens"])
@@ -16,6 +26,11 @@ servico_viagens = ViagemService(
     ViagemRepository(os.getenv("DATABASE_PATH", "data/viagens.db"))
 )
 servico_open_meteo = OpenMeteoService()
+orquestrador_viagens = OrquestradorViagemService(
+    servico_viagens,
+    servico_open_meteo,
+    ApiSecundariaService(),
+)
 
 
 @router.post(
@@ -32,9 +47,18 @@ def listar_viagens() -> list[ViagemResposta]:
     return servico_viagens.listar()
 
 
-@router.get("/{viagem_id}", response_model=ViagemResposta)
-def obter_viagem(viagem_id: int) -> ViagemResposta:
-    viagem = servico_viagens.obter(viagem_id)
+@router.get("/{viagem_id}", response_model=ViagemDetalheResposta)
+def obter_viagem(viagem_id: int) -> ViagemDetalheResposta:
+    try:
+        viagem = orquestrador_viagens.obter_detalhe(viagem_id)
+    except DestinoNaoEncontrado as erro:
+        raise HTTPException(
+            status_code=404,
+            detail="Origem ou destino não encontrado na busca de localidades.",
+        ) from erro
+    except (ErroOpenMeteo, ErroServicoSecundario) as erro:
+        raise HTTPException(status_code=502, detail=str(erro)) from erro
+
     if viagem is None:
         raise HTTPException(status_code=404, detail="Viagem não encontrada.")
     return viagem
@@ -64,7 +88,11 @@ def obter_previsao(viagem_id: int) -> PrevisaoResposta:
         raise HTTPException(status_code=404, detail="Viagem não encontrada.")
 
     try:
-        return servico_open_meteo.obter_previsao(viagem.destino)
+        return servico_open_meteo.obter_previsao(
+            viagem.destino,
+            viagem.data_inicio,
+            viagem.data_fim,
+        )
     except DestinoNaoEncontrado as erro:
         raise HTTPException(
             status_code=404,
