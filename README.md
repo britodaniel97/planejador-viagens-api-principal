@@ -24,7 +24,7 @@ O volume mantém o arquivo SQLite `viagens.db` no diretório `data` do computado
 
 ## Rotas
 
-- `POST /viagens` — cria uma viagem com `destino`, `data_inicio`, `data_fim` e `orcamento`.
+- `POST /viagens` — cria uma viagem com `destino`, `data_inicio` e `data_fim`.
 - `GET /viagens` — lista as viagens.
 - `GET /viagens/{id}` — consulta uma viagem.
 - `PUT /viagens/{id}` — substitui os dados da viagem.
@@ -37,8 +37,7 @@ Exemplo do corpo para criar ou atualizar:
 {
   "destino": "Rio de Janeiro",
   "data_inicio": "2026-12-01",
-  "data_fim": "2026-12-07",
-  "orcamento": 2500
+  "data_fim": "2026-12-07"
 }
 ```
 

@@ -30,8 +30,7 @@ class ViagemRepository:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     destino TEXT NOT NULL,
                     data_inicio TEXT NOT NULL,
-                    data_fim TEXT NOT NULL,
-                    orcamento REAL NOT NULL
+                    data_fim TEXT NOT NULL
                 )
                 """
             )
@@ -45,14 +44,13 @@ class ViagemRepository:
         with self._conectar() as conexao:
             cursor = conexao.execute(
                 """
-                INSERT INTO viagens (destino, data_inicio, data_fim, orcamento)
-                VALUES (?, ?, ?, ?)
+                INSERT INTO viagens (destino, data_inicio, data_fim)
+                VALUES (?, ?, ?)
                 """,
                 (
                     dados["destino"],
                     dados["data_inicio"].isoformat(),
                     dados["data_fim"].isoformat(),
-                    dados["orcamento"],
                 ),
             )
             registro = conexao.execute(
@@ -82,14 +80,13 @@ class ViagemRepository:
             cursor = conexao.execute(
                 """
                 UPDATE viagens
-                SET destino = ?, data_inicio = ?, data_fim = ?, orcamento = ?
+                SET destino = ?, data_inicio = ?, data_fim = ?
                 WHERE id = ?
                 """,
                 (
                     dados["destino"],
                     dados["data_inicio"].isoformat(),
                     dados["data_fim"].isoformat(),
-                    dados["orcamento"],
                     viagem_id,
                 ),
             )

@@ -7,7 +7,6 @@ class ViagemEntrada(BaseModel):
     destino: str
     data_inicio: date
     data_fim: date
-    orcamento: float
 
 
 class ViagemResposta(ViagemEntrada):
