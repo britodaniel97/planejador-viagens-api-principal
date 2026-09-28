@@ -93,6 +93,6 @@ Os valores meteorológicos acima são ilustrativos; a lista real terá um item p
 
 ## Arquitetura
 
-As rotas/controllers, os modelos Pydantic, o serviço de previsão e o repositório SQLite estão separados em arquivos próprios.
+As rotas/controllers, os modelos Pydantic, o serviço de previsão e o repositório SQLite estão separados em arquivos próprios. O cliente chama a API principal; ela consulta o SQLite, a API secundária e a Open-Meteo, consolidando os dados derivados na resposta.
 
-<!-- Inserir aqui a imagem do fluxograma da arquitetura. -->
+![Diagrama da arquitetura e fluxo de comunicação do Planejador de Viagens](docs/arquitetura.svg)
