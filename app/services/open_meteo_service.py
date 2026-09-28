@@ -21,7 +21,7 @@ class OpenMeteoService:
         try:
             resposta_cidade = requests.get(
                 self._URL_GEOCODING,
-                params={"name": cidade, "count": 1},
+                params={"name": cidade, "count": 1, "language": "pt"},
                 timeout=10,
             )
             resposta_cidade.raise_for_status()

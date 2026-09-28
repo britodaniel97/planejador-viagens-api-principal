@@ -35,16 +35,25 @@ orquestrador_viagens = OrquestradorViagemService(
 
 @router.post(
     "",
-    response_model=ViagemResposta,
+    response_model=ViagemDetalheResposta,
     status_code=status.HTTP_201_CREATED,
 )
-def criar_viagem(dados: ViagemEntrada) -> ViagemResposta:
-    return servico_viagens.criar(dados)
+def criar_viagem(dados: ViagemEntrada) -> ViagemDetalheResposta:
+    viagem = servico_viagens.criar(dados)
+    try:
+        return orquestrador_viagens.obter_detalhe(viagem.id)
+    except DestinoNaoEncontrado as erro:
+        raise HTTPException(
+            status_code=404,
+            detail="Origem ou destino não encontrado na busca de localidades.",
+        ) from erro
+    except (ErroOpenMeteo, ErroServicoSecundario) as erro:
+        raise HTTPException(status_code=502, detail=str(erro)) from erro
 
 
-@router.get("", response_model=list[ViagemResposta])
-def listar_viagens() -> list[ViagemResposta]:
-    return servico_viagens.listar()
+@router.get("", response_model=list[ViagemDetalheResposta])
+def listar_viagens() -> list[ViagemDetalheResposta]:
+    return orquestrador_viagens.listar_detalhes()
 
 
 @router.get("/{viagem_id}", response_model=ViagemDetalheResposta)

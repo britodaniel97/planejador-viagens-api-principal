@@ -1,6 +1,13 @@
-from app.models.viagem import ViagemDetalheResposta
-from app.services.api_secundaria_service import ApiSecundariaService
-from app.services.open_meteo_service import OpenMeteoService
+from app.models.viagem import ViagemDetalheResposta, ViagemResposta
+from app.services.api_secundaria_service import (
+    ApiSecundariaService,
+    ErroServicoSecundario,
+)
+from app.services.open_meteo_service import (
+    DestinoNaoEncontrado,
+    ErroOpenMeteo,
+    OpenMeteoService,
+)
 from app.services.viagem_service import ViagemService
 
 
@@ -20,6 +27,40 @@ class OrquestradorViagemService:
         if viagem is None:
             return None
 
+        return self._enriquecer_viagem(viagem)
+
+    def listar_detalhes(self) -> list[ViagemDetalheResposta]:
+        detalhes = []
+        for viagem in self.servico_viagens.listar():
+            try:
+                detalhes.append(self._enriquecer_viagem(viagem))
+            except DestinoNaoEncontrado:
+                detalhes.append(
+                    ViagemDetalheResposta(
+                        **viagem.model_dump(),
+                        distancia_km=None,
+                        duracao_estimada_horas=None,
+                        previsao_tempo=None,
+                        erro_calculo=(
+                            "Origem ou destino não encontrado na Open-Meteo."
+                        ),
+                    )
+                )
+            except (ErroOpenMeteo, ErroServicoSecundario) as erro:
+                detalhes.append(
+                    ViagemDetalheResposta(
+                        **viagem.model_dump(),
+                        distancia_km=None,
+                        duracao_estimada_horas=None,
+                        previsao_tempo=None,
+                        erro_calculo=str(erro),
+                    )
+                )
+        return detalhes
+
+    def _enriquecer_viagem(
+        self, viagem: ViagemResposta
+    ) -> ViagemDetalheResposta:
         coordenadas_origem = self.servico_open_meteo.obter_coordenadas(
             viagem.origem
         )

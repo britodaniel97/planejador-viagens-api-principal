@@ -44,8 +44,8 @@ O volume mantém o arquivo SQLite `viagens.db` no diretório `data` do computado
 
 ## Rotas
 
-- `POST /viagens` — cria uma viagem com origem, destino, datas e meio de transporte.
-- `GET /viagens` — lista os dados persistidos, sem consultar os outros serviços.
+- `POST /viagens` — cria uma viagem e retorna também distância, duração estimada e previsão do tempo.
+- `GET /viagens` — lista as viagens com distância, duração estimada e previsão do tempo calculadas.
 - `GET /viagens/{id}` — busca os dados no SQLite, obtém coordenadas e previsão no Open-Meteo, chama a API secundária para distância e duração e retorna uma resposta consolidada.
 - `PUT /viagens/{id}` — substitui os dados da viagem.
 - `DELETE /viagens/{id}` — remove uma viagem.
@@ -63,7 +63,7 @@ Exemplo do corpo para criar ou atualizar:
 }
 ```
 
-Detalhar a viagem (`GET /viagens/{id}`) retorna também `distancia_km`, `duracao_estimada_horas` e a previsão diária em `previsao_tempo`. O cálculo de distância e duração é feito pela API secundária via REST. A previsão disponível é limitada ao horizonte de até 16 dias da Open-Meteo; escolha datas dentro desse horizonte para receber os dados previstos.
+Os endpoints `POST /viagens`, `GET /viagens` e `GET /viagens/{id}` incluem `distancia_km`, `duracao_estimada_horas` e a previsão diária em `previsao_tempo`, obtidos por orquestração da API principal. O cálculo de distância e duração é feito pela API secundária via REST. A previsão disponível é limitada ao horizonte de até 16 dias da Open-Meteo; escolha datas dentro desse horizonte para receber os dados previstos. Em registros antigos sem origem válida ou quando um serviço externo falhar, a listagem mantém os dados persistidos e informa `erro_calculo`, deixando os campos derivados como `null`.
 
 Exemplo simplificado da resposta de detalhe:
 

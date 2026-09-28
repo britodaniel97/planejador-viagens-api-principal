@@ -35,6 +35,7 @@ class PrevisaoResposta(BaseModel):
 
 
 class ViagemDetalheResposta(ViagemResposta):
-    distancia_km: float
-    duracao_estimada_horas: float
-    previsao_tempo: list[DiaPrevisao]
+    distancia_km: float | None
+    duracao_estimada_horas: float | None
+    previsao_tempo: list[DiaPrevisao] | None
+    erro_calculo: str | None = None
