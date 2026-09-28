@@ -44,7 +44,7 @@ O volume mantém o arquivo SQLite `viagens.db` no diretório `data` do computado
 
 ## Rotas
 
-- `POST /viagens` — cria uma viagem com origem, destino, datas, orçamento e meio de transporte.
+- `POST /viagens` — cria uma viagem com origem, destino, datas e meio de transporte.
 - `GET /viagens` — lista os dados persistidos, sem consultar os outros serviços.
 - `GET /viagens/{id}` — busca os dados no SQLite, obtém coordenadas e previsão no Open-Meteo, chama a API secundária para distância e duração e retorna uma resposta consolidada.
 - `PUT /viagens/{id}` — substitui os dados da viagem.
@@ -59,7 +59,6 @@ Exemplo do corpo para criar ou atualizar:
   "destino": "São Paulo",
   "data_inicio": "2026-10-01",
   "data_fim": "2026-10-03",
-  "orcamento": 2500,
   "meio_transporte": "carro"
 }
 ```
@@ -75,7 +74,6 @@ Exemplo simplificado da resposta de detalhe:
   "destino": "São Paulo",
   "data_inicio": "2026-10-01",
   "data_fim": "2026-10-03",
-  "orcamento": 3000,
   "meio_transporte": "carro",
   "distancia_km": 357.12,
   "duracao_estimada_horas": 3.57,

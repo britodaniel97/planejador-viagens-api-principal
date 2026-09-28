@@ -32,7 +32,6 @@ class ViagemRepository:
                     destino TEXT NOT NULL,
                     data_inicio TEXT NOT NULL,
                     data_fim TEXT NOT NULL,
-                    orcamento REAL NOT NULL,
                     meio_transporte TEXT NOT NULL
                 )
                 """
@@ -41,16 +40,67 @@ class ViagemRepository:
                 coluna["name"]
                 for coluna in conexao.execute("PRAGMA table_info(viagens)")
             }
-            migracoes = {
-                "origem": "TEXT NOT NULL DEFAULT ''",
-                "orcamento": "REAL NOT NULL DEFAULT 0",
-                "meio_transporte": "TEXT NOT NULL DEFAULT 'carro'",
+            colunas_esperadas = {
+                "id",
+                "origem",
+                "destino",
+                "data_inicio",
+                "data_fim",
+                "meio_transporte",
             }
-            for coluna, definicao in migracoes.items():
-                if coluna not in colunas_existentes:
-                    conexao.execute(
-                        f"ALTER TABLE viagens ADD COLUMN {coluna} {definicao}"
-                    )
+            if colunas_existentes != colunas_esperadas:
+                self._migrar_tabela(conexao, colunas_existentes)
+
+    @staticmethod
+    def _migrar_tabela(
+        conexao: sqlite3.Connection, colunas_existentes: set[str]
+    ) -> None:
+        colunas = (
+            "id",
+            "origem",
+            "destino",
+            "data_inicio",
+            "data_fim",
+            "meio_transporte",
+        )
+        valores_padrao = {
+            "origem": "''",
+            "destino": "''",
+            "data_inicio": "''",
+            "data_fim": "''",
+            "meio_transporte": "'carro'",
+        }
+        selecoes = []
+        for coluna in colunas:
+            if coluna == "id":
+                selecoes.append("id")
+            elif coluna in colunas_existentes:
+                selecoes.append(
+                    f"COALESCE({coluna}, {valores_padrao[coluna]})"
+                )
+            else:
+                selecoes.append(valores_padrao[coluna])
+        conexao.execute("DROP TABLE IF EXISTS viagens_nova")
+        conexao.execute(
+            """
+            CREATE TABLE viagens_nova (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                origem TEXT NOT NULL,
+                destino TEXT NOT NULL,
+                data_inicio TEXT NOT NULL,
+                data_fim TEXT NOT NULL,
+                meio_transporte TEXT NOT NULL
+            )
+            """
+        )
+        conexao.execute(
+            f"""
+            INSERT INTO viagens_nova ({", ".join(colunas)})
+            SELECT {", ".join(selecoes)} FROM viagens
+            """
+        )
+        conexao.execute("DROP TABLE viagens")
+        conexao.execute("ALTER TABLE viagens_nova RENAME TO viagens")
 
     @staticmethod
     def _para_resposta(registro: sqlite3.Row) -> ViagemResposta:
@@ -62,16 +112,15 @@ class ViagemRepository:
             cursor = conexao.execute(
                 """
                 INSERT INTO viagens (
-                    origem, destino, data_inicio, data_fim, orcamento, meio_transporte
+                    origem, destino, data_inicio, data_fim, meio_transporte
                 )
-                VALUES (?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?)
                 """,
                 (
                     dados["origem"],
                     dados["destino"],
                     dados["data_inicio"].isoformat(),
                     dados["data_fim"].isoformat(),
-                    dados["orcamento"],
                     dados["meio_transporte"],
                 ),
             )
@@ -103,7 +152,7 @@ class ViagemRepository:
                 """
                 UPDATE viagens
                 SET origem = ?, destino = ?, data_inicio = ?, data_fim = ?,
-                    orcamento = ?, meio_transporte = ?
+                    meio_transporte = ?
                 WHERE id = ?
                 """,
                 (
@@ -111,7 +160,6 @@ class ViagemRepository:
                     dados["destino"],
                     dados["data_inicio"].isoformat(),
                     dados["data_fim"].isoformat(),
-                    dados["orcamento"],
                     dados["meio_transporte"],
                     viagem_id,
                 ),
