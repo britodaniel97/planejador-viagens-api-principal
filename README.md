@@ -95,4 +95,23 @@ Os valores meteorológicos acima são ilustrativos; a lista real terá um item p
 
 As rotas/controllers, os modelos Pydantic, o serviço de previsão e o repositório SQLite estão separados em arquivos próprios. O cliente chama a API principal; ela consulta o SQLite, a API secundária e a Open-Meteo, consolidando os dados derivados na resposta.
 
-![Diagrama da arquitetura e fluxo de comunicação do Planejador de Viagens](docs/arquitetura.svg)
+```mermaid
+flowchart LR
+    cliente[Cliente / Swagger]
+
+    subgraph docker[Rede Docker]
+        principal[API principal<br/>FastAPI :8000<br/>CRUD e orquestracao]
+        secundaria[API secundaria<br/>FastAPI :8001<br/>Distancia e duracao]
+        sqlite[(SQLite<br/>dados basicos)]
+    end
+
+    openmeteo[Open-Meteo<br/>Geocoding e previsao]
+
+    cliente -->|REST| principal
+    principal -->|SQL| sqlite
+    principal -->|REST: distancia e duracao| secundaria
+    secundaria -->|JSON: resultados| principal
+    principal -->|HTTPS: geocoding e previsao| openmeteo
+    openmeteo -->|JSON: coordenadas e clima| principal
+    principal -->|JSON consolidado| cliente
+```
