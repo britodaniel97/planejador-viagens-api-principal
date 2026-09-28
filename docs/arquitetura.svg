@@ -1,72 +1,79 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560" role="img" aria-labelledby="title desc">
   <title id="title">Arquitetura do Planejador de Viagens</title>
-  <desc id="desc">O cliente chama a API principal. A API principal consulta o SQLite, a API secundária para distancia e duracao, e a Open-Meteo para coordenadas e previsao.</desc>
+  <desc id="desc">O cliente acessa a API principal, que persiste os dados no SQLite, solicita cálculos à API secundária e consulta a previsão na Open-Meteo.</desc>
   <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0 0 L9 4.5 L0 9 Z" fill="#475569"/>
     </marker>
-    <marker id="arrow-blue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
-      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    <marker id="arrow-blue" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0 0 L9 4.5 L0 9 Z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrow-start" markerWidth="9" markerHeight="9" refX="2" refY="4.5" orient="auto">
+      <path d="M9 0 L0 4.5 L9 9 Z" fill="#475569"/>
     </marker>
     <style>
       text { font-family: Arial, Helvetica, sans-serif; fill: #172033; }
-      .title { font-size: 27px; font-weight: 700; }
-      .label { font-size: 17px; font-weight: 700; }
+      .title { font-size: 25px; font-weight: 700; }
+      .heading { font-size: 17px; font-weight: 700; }
       .body { font-size: 14px; }
-      .small { font-size: 12px; fill: #475569; }
-      .box { stroke-width: 2; rx: 14; }
-      .arrow { fill: none; stroke: #334155; stroke-width: 2.5; marker-end: url(#arrow); }
-      .rest { fill: none; stroke: #2563eb; stroke-width: 2.5; marker-end: url(#arrow-blue); }
-      .response { fill: none; stroke: #2563eb; stroke-width: 2; stroke-dasharray: 7 6; marker-end: url(#arrow-blue); }
+      .note { font-size: 12px; fill: #475569; }
+      .card { stroke-width: 1.5; rx: 14; }
+      .flow { fill: none; stroke: #475569; stroke-width: 2.5; marker-end: url(#arrow); }
+      .call { fill: none; stroke: #2563eb; stroke-width: 2.5; marker-end: url(#arrow-blue); }
+      .reply { fill: none; stroke: #2563eb; stroke-width: 2; stroke-dasharray: 6 5; marker-end: url(#arrow-blue); }
+      .data { fill: none; stroke: #475569; stroke-width: 2; marker-start: url(#arrow-start); marker-end: url(#arrow); }
     </style>
   </defs>
-  <rect width="1200" height="700" fill="#f8fafc"/>
-  <text x="600" y="48" text-anchor="middle" class="title">Planejador de Viagens — arquitetura e comunicação</text>
 
-  <rect x="220" y="95" width="730" height="510" rx="22" fill="#eff6ff" stroke="#93c5fd" stroke-width="2" stroke-dasharray="9 7"/>
-  <text x="245" y="126" class="label" fill="#1d4ed8">Rede Docker interna</text>
+  <rect width="1200" height="560" fill="#f8fafc"/>
+  <text x="600" y="48" text-anchor="middle" class="title">Planejador de Viagens — arquitetura</text>
 
-  <rect x="35" y="278" width="145" height="105" class="box" fill="#fff" stroke="#64748b"/>
-  <text x="107" y="315" text-anchor="middle" class="label">Cliente</text>
-  <text x="107" y="342" text-anchor="middle" class="body">Swagger / HTTP</text>
-  <text x="107" y="364" text-anchor="middle" class="small">uma chamada por operacao</text>
+  <rect x="242" y="82" width="635" height="412" rx="20" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+  <text x="266" y="112" class="note">REDE DOCKER</text>
 
-  <rect x="290" y="260" width="270" height="170" class="box" fill="#dbeafe" stroke="#2563eb"/>
-  <text x="425" y="295" text-anchor="middle" class="label">API principal</text>
-  <text x="425" y="324" text-anchor="middle" class="body">FastAPI · porta 8000</text>
-  <text x="425" y="350" text-anchor="middle" class="body">CRUD + orquestracao</text>
-  <text x="425" y="376" text-anchor="middle" class="body">compoe a resposta</text>
-  <text x="425" y="405" text-anchor="middle" class="small">distancia · duracao · previsao</text>
+  <rect x="30" y="220" width="172" height="112" class="card" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="116" y="259" text-anchor="middle" class="heading">Cliente</text>
+  <text x="116" y="284" text-anchor="middle" class="body">Swagger / HTTP</text>
+  <text x="116" y="309" text-anchor="middle" class="note">uma chamada</text>
 
-  <rect x="655" y="160" width="245" height="145" class="box" fill="#dcfce7" stroke="#16a34a"/>
-  <text x="777" y="194" text-anchor="middle" class="label">API secundaria</text>
-  <text x="777" y="222" text-anchor="middle" class="body">FastAPI · porta 8001</text>
-  <text x="777" y="250" text-anchor="middle" class="body">POST /distancia</text>
-  <text x="777" y="276" text-anchor="middle" class="body">POST /duracao-estimada</text>
+  <rect x="300" y="190" width="285" height="190" class="card" fill="#dbeafe" stroke="#60a5fa"/>
+  <text x="442" y="229" text-anchor="middle" class="heading">API principal</text>
+  <text x="442" y="256" text-anchor="middle" class="body">FastAPI · porta 8000</text>
+  <line x1="334" y1="274" x2="551" y2="274" stroke="#93c5fd"/>
+  <text x="442" y="301" text-anchor="middle" class="body">CRUD de viagens</text>
+  <text x="442" y="327" text-anchor="middle" class="body">orquestra os serviços</text>
+  <text x="442" y="353" text-anchor="middle" class="note">retorna dados consolidados</text>
 
-  <rect x="655" y="390" width="245" height="115" class="box" fill="#fef3c7" stroke="#d97706"/>
-  <text x="777" y="429" text-anchor="middle" class="label">SQLite</text>
-  <text x="777" y="457" text-anchor="middle" class="body">dados basicos da viagem</text>
-  <text x="777" y="481" text-anchor="middle" class="small">sem dados derivados</text>
+  <rect x="645" y="130" width="210" height="112" class="card" fill="#dcfce7" stroke="#86efac"/>
+  <text x="750" y="166" text-anchor="middle" class="heading">API secundária</text>
+  <text x="750" y="191" text-anchor="middle" class="body">FastAPI · porta 8001</text>
+  <text x="750" y="216" text-anchor="middle" class="note">distância e duração</text>
 
-  <rect x="985" y="260" width="185" height="170" class="box" fill="#f3e8ff" stroke="#9333ea"/>
-  <text x="1077" y="298" text-anchor="middle" class="label">Open-Meteo</text>
-  <text x="1077" y="328" text-anchor="middle" class="body">API externa publica</text>
-  <text x="1077" y="359" text-anchor="middle" class="body">Geocoding</text>
-  <text x="1077" y="385" text-anchor="middle" class="body">Previsao do tempo</text>
+  <rect x="645" y="332" width="210" height="105" class="card" fill="#fef3c7" stroke="#fcd34d"/>
+  <text x="750" y="369" text-anchor="middle" class="heading">SQLite</text>
+  <text x="750" y="395" text-anchor="middle" class="body">dados básicos</text>
+  <text x="750" y="418" text-anchor="middle" class="note">da viagem</text>
 
-  <path d="M180 330 H290" class="arrow"/>
-  <text x="235" y="316" text-anchor="middle" class="small">REST</text>
-  <path d="M560 292 H610 V220 H655" class="rest"/>
-  <text x="610" y="196" text-anchor="middle" class="small">REST</text>
-  <path d="M655 270 H625 V352 H560" class="response"/>
-  <path d="M560 407 H610 V448 H655" class="arrow"/>
-  <text x="610" y="433" text-anchor="middle" class="small">SQL</text>
-  <path d="M655 480 H625 V422 H560" class="response"/>
-  <path d="M560 350 H985" class="rest"/>
-  <text x="772" y="339" text-anchor="middle" class="small">REST: geocoding e previsao</text>
+  <rect x="950" y="220" width="220" height="112" class="card" fill="#f3e8ff" stroke="#d8b4fe"/>
+  <text x="1060" y="257" text-anchor="middle" class="heading">Open-Meteo</text>
+  <text x="1060" y="282" text-anchor="middle" class="body">API externa pública</text>
+  <text x="1060" y="307" text-anchor="middle" class="note">geocoding e previsão</text>
 
-  <path d="M290 370 H180" class="response"/>
-  <text x="107" y="410" text-anchor="middle" class="small">Resposta consolidada</text>
-  <text x="600" y="653" text-anchor="middle" class="small">Distancia, duracao, coordenadas e previsao sao derivados em tempo de requisicao; somente os dados basicos ficam no SQLite.</text>
+  <path d="M202 255 H300" class="flow"/>
+  <text x="251" y="243" text-anchor="middle" class="note">REST</text>
+  <path d="M300 313 H202" class="reply"/>
+  <text x="251" y="337" text-anchor="middle" class="note">resposta</text>
+
+  <path d="M585 225 H610 V172 H645" class="call"/>
+  <text x="625" y="151" text-anchor="middle" class="note">REST</text>
+  <path d="M645 220 H630 V258 H585" class="reply"/>
+
+  <path d="M585 285 H915 V276 H950" class="call"/>
+  <text x="767" y="271" text-anchor="middle" class="note">HTTPS</text>
+  <path d="M950 310 H915 V465 H615 V370 H585" class="reply"/>
+
+  <path d="M520 380 L700 332" class="data"/>
+  <text x="585" y="405" text-anchor="end" class="note">SQL</text>
+
+  <text x="600" y="530" text-anchor="middle" class="note">A API principal guarda os dados básicos; distância, duração e previsão são obtidas ao atender cada requisição.</text>
 </svg>
